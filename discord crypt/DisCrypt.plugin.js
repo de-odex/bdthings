@@ -48,7 +48,7 @@ class DisCrypt {
 	
 	// Called when the library is loaded
 	initialize() {		
-        PluginUtilities.checkForUpdate(this.getName(), this.getVersion()), "GITHUB_RAW_LINK";
+        PluginUtilities.checkForUpdate(this.getName(), this.getVersion()), "https://cdn.rawgit.com/de-odex/bdthings/4f936dde/discord%20crypt/DisCrypt.plugin.js";
 	} 
     stop() {
 
