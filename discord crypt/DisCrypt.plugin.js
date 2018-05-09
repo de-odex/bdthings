@@ -24,19 +24,19 @@ class DisCrypt {
 
 		let jsbn = document.createElement("script");
 		jsbn.setAttribute("type", "text/javascript");
-		jsbn.setAttribute("src", "https://www-cs-students.stanford.edu/~tjw/jsbn/jsbn.js");
+		jsbn.setAttribute("src", "https://cdn.rawgit.com/de-odex/bdthings/518d7e2e/discord%20crypt/deps/jsbn.js");
 		jsbn.setAttribute("id", "jsbnLib");
 		document.head.appendChild(jsbn);
 
 		let rsa = document.createElement("script");
 		rsa.setAttribute("type", "text/javascript");
-		rsa.setAttribute("src", "https://www-cs-students.stanford.edu/~tjw/jsbn/rsa.js");
+		rsa.setAttribute("src", "https://cdn.rawgit.com/de-odex/bdthings/518d7e2e/discord%20crypt/deps/rsa.js");
 		rsa.setAttribute("id", "rsaLib");
 		document.head.appendChild(rsa);
 
 		let rsa2 = document.createElement("script");
 		rsa.setAttribute("type", "text/javascript");
-		rsa.setAttribute("src", "https://www-cs-students.stanford.edu/~tjw/jsbn/rsa2.js");
+		rsa.setAttribute("src", "https://cdn.rawgit.com/de-odex/bdthings/518d7e2e/discord%20crypt/deps/rsa2.js");
 		rsa.setAttribute("id", "rsa2Lib");
 		document.head.appendChild(rsa2);
 
@@ -47,7 +47,7 @@ class DisCrypt {
 	}
 	
 	// Called when the library is loaded
-	initialize() {		
+	initialize() {
         PluginUtilities.checkForUpdate(this.getName(), this.getVersion()), "https://cdn.rawgit.com/de-odex/bdthings/4f936dde/discord%20crypt/DisCrypt.plugin.js";
 	} 
     stop() {
