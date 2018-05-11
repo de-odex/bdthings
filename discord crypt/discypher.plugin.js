@@ -87,6 +87,9 @@ class discypher {
                                 </div>
                             </div>
                         </div>`;
+
+        this.msg_parse = InternalUtilities.WebpackModules.findByUniqueProperties(["createBotMessage"])
+        this.msg_send = InternalUtilities.WebpackModules.findByUniqueProperties(["sendClydeError"])
     }
 
 
@@ -176,7 +179,20 @@ class discypher {
             
         }
 
-    } // Observer for the document. Better documentation than I can provide is found here: <https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver>
+    }
+
+    sendEncrypt(e) {
+        let dm = ReactUtilities.getOwnerInstance($("form")[0]).props.channel
+        if (dm.type != 1) return
+        let msg = this.msg_parse.parse(dm, $(DiscordSelectors.Textarea.channelTextArea.toString() + ' textarea').val()).content
+        if (!msg.contains("```encrypt\n")) return
+        let start = msg.indexOf("```encrypt\n")
+
+        ReactUtilities.getOwnerInstance($('form')[0]).setState({textValue: ''});
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+    }
 
     getSettingsPanel() {
         var dms = DiscordModules.ChannelStore.getDMUserIds()
