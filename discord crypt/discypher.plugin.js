@@ -187,6 +187,7 @@ class discypher {
         let msg = this.msg_parse.parse(dm, $(DiscordSelectors.Textarea.channelTextArea.toString() + ' textarea').val()).content
         if (!msg.contains("```encrypt\n")) return
         let start = msg.indexOf("```encrypt\n")
+        let end = msg.indexOf("```", start + 3)
 
         ReactUtilities.getOwnerInstance($('form')[0]).setState({textValue: ''});
         e.preventDefault();
