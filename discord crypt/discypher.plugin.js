@@ -64,8 +64,8 @@ String.prototype.replaceBetween = function(start, end, what) {
 class discypher {
     getName() {return "discypher";}
     getDescription() {return "Automatically decrypt and encrypt messages via RSA";}
-    getVersion() {return "0.1.0";} // angery! give me my numerical versions! xd
-    getWordVersion() {return "one";} // not required, i just prefer it.
+    getVersion() {return "0.11.0";} // angery! give me my numerical versions! xd
+    getWordVersion() {return "eleven";} // not required, i just prefer it.
     getAuthor() {return "de/odex";}
     getSource() {return "https://cdn.rawgit.com/de-odex/bdthings/4f936dde/discord%20crypt/discypher.plugin.js"}
 
@@ -216,6 +216,8 @@ class discypher {
         let content_start = start != -1 ? start + start_string.length : -1
         let content_end = msg.indexOf(end_string, start + start_string.length)
         let end = content_end != -1 ? content_end + end_string.length : -1
+
+        if (!this.settings.encrypt[channel.recipients[0]] && !(start!=-1 || end!=-1)) return
 
         var pub_key = this.settings.pub_key[channel.recipients[0]]
         if (pub_key === undefined) {PluginUtilities.showToast("no public key given for this user", {type: "error"}); return;}
