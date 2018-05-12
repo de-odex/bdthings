@@ -63,15 +63,21 @@ String.prototype.replaceBetween = function(start, end, what) {
 
 class discypher {
     getName() {return "discypher";}
+    getShortName() { return "dcyphr"; }
     getDescription() {return "Automatically decrypt and encrypt messages via RSA";}
-    getVersion() {return "0.11.0";} // angery! give me my numerical versions! xd
-    getWordVersion() {return "eleven";} // not required, i just prefer it.
+    getVersion() {return "0.12.0";} // angery! give me my numerical versions! xd
+    getWordVersion() {return "twelve";} // not required, i just prefer it.
     getAuthor() {return "de/odex";}
     getSource() {return "https://cdn.rawgit.com/de-odex/bdthings/4f936dde/discord%20crypt/discypher.plugin.js"}
 
     //__init__: tales of a python programmer
     constructor(){
-        this.default_settings = {priv_key: null, pub_key: {}, encrypt: {}, decrypt: false}
+        this.default_settings = {priv_key: null, 
+                                 pub_key: {}, 
+                                 encrypt: {}, 
+                                 decrypt: false,
+                                 prefix: "e{",
+                                 suffix: "}"}
         this.settings = this.default_settings  // almost typed None there
         this.modalHTML = `<div id="\${id}" class="theme-dark">
                             <div class="backdrop backdrop-1ocfXc" style="background-color: rgb(0, 0, 0); opacity: 0.85;"></div>
@@ -95,9 +101,7 @@ class discypher {
     }
 
 
-    load() {
-
-    } //depr
+    load() {} //depr
 
     start() {
         let libraryScript = document.getElementById('zeresLibraryScript');
@@ -147,7 +151,6 @@ class discypher {
             var contextmenu = elem.classList.contains(DiscordClasses.ContextMenu.contextMenu) ? elem : elem.querySelector(DiscordSelectors.ContextMenu.contextMenu)
             if ((contextmenu) && (contextmenu.parentNode.id == "app-mount")) {
                 let type = ReactUtilities.getReactProperty(contextmenu, "return.memoizedProps.type")
-                Logger.debug("", type)
                 if ((type == DiscordModules.DiscordConstants.ContextMenuTypes.USER_CHANNEL_TITLE) ||
                     (type == DiscordModules.DiscordConstants.ContextMenuTypes.USER_PRIVATE_CHANNELS) ||
                     (type == DiscordModules.DiscordConstants.ContextMenuTypes.USER_PRIVATE_CHANNELS_MESSAGE)) {
@@ -184,11 +187,9 @@ class discypher {
             e.addedNodes.forEach(element => {
                 if (element && element.tagName && element.classList && element.classList.contains("message-group")) {
                     element.querySelectorAll(".message").forEach(message => {this.messageDecrypt(message);});
-                    Logger.debug("", "msggrp")
                 }
                 else if (element && element.tagName && element.classList && element.classList.contains("message")) {
                     this.messageDecrypt(element)
-                    Logger.debug("", "msg")
                 }
             })
 
@@ -209,8 +210,8 @@ class discypher {
         let channel = ReactUtilities.getOwnerInstance($("form")[0]).props.channel
         let msg = DiscordModules.MessageParser.parse(channel, $(e.currentTarget).val()).content
 
-        let start_string = "e{"
-        let end_string = "}"
+        let start_string = this.settings.prefix
+        let end_string = this.settings.suffix
 
         let start = msg.indexOf(start_string)
         let content_start = start != -1 ? start + start_string.length : -1
@@ -253,8 +254,6 @@ class discypher {
                 if (match && !messages.classList.contains("message-sending")){
                     if (settings.priv_key === undefined) {PluginUtilities.showToast("no private key given for your account", {type: "error"}); return;}
                     //start = match.index, end = match.index + match[0].length
-                    Logger.debug("message block", match[1])
-                    Logger.debug("message match", match)
                     var rsa = new JSEncrypt()
                     rsa.setPrivateKey(settings.priv_key)
                     var decrypted = rsa.decrypt(match[1])  // to_decrypt
@@ -262,7 +261,6 @@ class discypher {
                 }
                 
                 //node2.innerText = btoa(unescape(encodeURIComponent(node2.innerText)))
-                Logger.debug("message text", (messages.classList.contains("message-sending")?"SENDING: ":"") + node2.innerText)
             })
         })
 
@@ -303,14 +301,20 @@ class discypher {
             if (dms_u[i] === undefined) continue
             if (dms_u[i].bot) {dms_u.remove(i); i--}
         }
-        Logger.debug("", dms_u)
 
         var panel = $("<form>").addClass("form").css("width", "100%");
 
-        var private_key = new CustomSettings.TextArea("private key", "input your private key here (may be unsafe but i'm using it anyway)", {type: "text", placeholder: "-----BEGIN RSA PRIVATE KEY-----...", value: this.settings.priv_key, rows: 10, cols: 64}, (val) => { this.settings.priv_key = val; this.set_settings() })
+        var private_key = new CustomSettings.TextArea("private key", "input your private key here (may be unsafe but i'm using it anyway)", {type: "text", placeholder: "-----BEGIN RSA PRIVATE KEY-----...", value: this.settings.priv_key, rows: 10, cols: 85, style: "resize:none"}, (val) => { this.settings.priv_key = val; this.set_settings() })
         private_key.getElement().appendTo(panel)
         var decrypt = new PluginSettings.Checkbox("decrypt", "automatically decrypt?", this.settings.decrypt, val => { this.settings.decrypt = val; this.set_settings() }, {})
         decrypt.getElement().appendTo(panel)
+
+        var prefix = new PluginSettings.Textbox("prefix", "set prefix for encryption", this.settings.prefix, "", val => { this.settings.prefix = val; this.set_settings() }, {})
+        prefix.getElement().appendTo(panel)
+
+        var suffix = new PluginSettings.Textbox("suffix", "set suffix for encryption", this.settings.suffix, "", val => { this.settings.suffix = val; this.set_settings() }, {})
+        suffix.getElement().appendTo(panel)
+
         $("<p>there is a better way to add public keys in construction. just wait, please</p>").appendTo(panel)
         $("<p>for now you right click the user name at top of dms</p>").appendTo(panel)
 
