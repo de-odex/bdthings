@@ -173,10 +173,10 @@ class discypher {
     getName() {return "discypher";}
     getShortName() { return "dcyphr"; }
     getDescription() {return "Automatically decrypt and encrypt messages via RSA";}
-    getVersion() {return "0.14.0";} // angery! give me my numerical versions! xd
-    getWordVersion() {return "fourteen";} // not required, i just prefer it.
+    getVersion() {return "0.15.0";} // angery! give me my numerical versions! xd
+    getWordVersion() {return "fifteen";} // not required, i just prefer it.
     getAuthor() {return "de/odex";}
-    getSource() {return "https://cdn.rawgit.com/de-odex/bdthings/4f936dde/discord%20crypt/discypher.plugin.js"}
+    getSource() {return "https://rawgit.com/de-odex/bdthings/master/discord%20crypt/discypher.plugin.js"}
 
     //__init__: tales of a python programmer
     constructor() {
