@@ -173,8 +173,8 @@ class discypher {
     getName() {return "discypher";}
     getShortName() { return "dcyphr"; }
     getDescription() {return "Automatically decrypt and encrypt messages via RSA";}
-    getVersion() {return "0.15.0";} // angery! give me my numerical versions! xd
-    getWordVersion() {return "fifteen";} // not required, i just prefer it.
+    getVersion() {return "0.16.0";} // angery! give me my numerical versions! xd
+    getWordVersion() {return "sixteen";} // not required, i just prefer it.
     getAuthor() {return "de/odex";}
     getSource() {return "https://rawgit.com/de-odex/bdthings/master/discord%20crypt/discypher.plugin.js"}
 
@@ -328,19 +328,24 @@ class discypher {
             let channel = ReactUtilities.getOwnerInstance($("form")[0]).props.channel
             let textarea = $(e.currentTarget)[0]
             let org_msg = $(e.currentTarget).val()
-            let parsed_msg = DiscordModules.MessageParser.parse(channel, org_msg).content
-            //Logger.debug("", parsed_msg)
+            //Logger.debug("", org_msg)
 
             let enc_block = new RegExp("enc:" + DiscordModules.UserInfoStore.getId() + "\n(.*)\nenc:end", "g")
-            if (enc_block.exec(parsed_msg)) return
+            if (enc_block.exec(org_msg)) return
 
             let start_string = this.settings.prefix
             let end_string = this.settings.suffix
 
-            let start = org_msg.indexOf(start_string)
-            let content_start = start != -1 ? start + start_string.length : -1
-            let content_end = org_msg.indexOf(end_string, start + start_string.length)
-            let end = content_end != -1 ? content_end + end_string.length : -1
+            let dec_block = new RegExp(start_string + "(.*)" + end_string, "g") // decrypted <- block, not decryption
+            let dec_match = dec_block.exec(org_msg)
+            if (!dec_match) return
+            //Logger.debug("decmatch", dec_match)
+
+            // in original
+            let start = dec_match.index
+            let content_start = dec_match.index + start_string.length
+            let content_end = dec_match.index + start_string.length + dec_match[1].length
+            let end = dec_match.index + dec_match[0].length
 
             if (!this.settings.encrypt[channel.recipients[0]] && !(start!=-1 || end!=-1)) return
 
@@ -359,10 +364,10 @@ class discypher {
             let to_encrypt = []
 
             if (start!=-1 || end!=-1) {
-                to_encrypt = [parsed_msg.substring(content_start, content_end)]
+                to_encrypt = [DiscordModules.MessageParser.parse(channel, org_msg.substring(content_start, content_end)).content]
             } else if (this.settings.encrypt[channel.recipients[0]]) {
-                if (!parsed_msg.length || !org_msg.length) return
-                to_encrypt = [parsed_msg]
+                if (!org_msg.length) return
+                to_encrypt = [DiscordModules.MessageParser.parse(channel, org_msg).content]
                 start = 0
                 end = org_msg.length
             } else {
@@ -374,6 +379,7 @@ class discypher {
 
             let table = {124: 512, 128: 512, 216: 1024, 392: 2048, 736: 4096}
             let key_length = table[rsa.getPublicKeyB64().length] / 8 - 11
+            //Logger.debug("uri", to_encrypt[0])
             let matches = encodeURIComponent(to_encrypt[0]).match(/%[89ABab]/g)
             let msg_utf8_length = to_encrypt[0].length + (matches ? matches.length : 0)
 
@@ -488,11 +494,18 @@ class discypher {
 
         $(message).each(function(_, node){
             $(node).find(".markup").each(function(_, node2){
+                let edited = node2.querySelector(".edited")
                 let text = node2.innerText
-                let enc_block = new RegExp("enc:" + DiscordModules.UserInfoStore.getId() + "\n(.*)\nenc:end", "g")
-                let match = enc_block.exec(text)
+                let to_replace = node2.innerHTML
+                if (edited) {
+                    text = text.substr(0, text.length - 8)
+                }
 
-                if (match && !message.classList.contains("message-sending")){
+                let enc_block = new RegExp("enc:" + DiscordModules.UserInfoStore.getId() + "\n(.*)\nenc:end", "g")
+                let enc_match = enc_block.exec(to_replace)
+                //Logger.debug("match", enc_match)
+
+                if (enc_match && !message.classList.contains("message-sending")){
                     if (this_plugin.settings.priv_key === undefined) {PluginUtilities.showToast("no private key given for your account", {type: "error"}); return;}
                     //start = match.index, end = match.index + match[0].length
 
@@ -500,8 +513,8 @@ class discypher {
                     rsa.setPrivateKey(this_plugin.settings.priv_key)
                     let decrypted = []
                     try {
-                        let serialized = JSON.parse(match[1])
-                        //Logger.debug("serialized", match[1])
+                        let serialized = JSON.parse(enc_match[1])
+                        //Logger.debug("serialized", enc_match[1])
                         serialized.forEach((v, i) => {
                             decrypted[i] = rsa.decrypt(v)
                             //Logger.debug("to decrypt v", v)
@@ -513,11 +526,14 @@ class discypher {
                     } catch (error) {
                         // old system, no longer generated
                         Logger.warn(this_plugin.getName(), "Old system used, this method is deprecated")
-                        decrypted = rsa.decrypt(match[1])
+                        decrypted = rsa.decrypt(enc_match[1])
                     }
-
-                    node2.innerText = text.replaceBetween(match.index, match.index + match[0].length, decrypted)
+                    node2.innerHTML = to_replace.replaceBetween(enc_match.index, enc_match.index + enc_match[0].length, decrypted)
                     node2.style.color = this_plugin.settings.color
+                    /*
+                    if (edited){
+                        node2.appendChild(edited)
+                    }//*/
                 }
                 //node2.innerText = btoa(unescape(encodeURIComponent(node2.innerText)))
             })
