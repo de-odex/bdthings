@@ -173,8 +173,8 @@ class discypher {
     getName() {return "discypher";}
     getShortName() { return "dcyphr"; }
     getDescription() {return "Automatically decrypt and encrypt messages via RSA";}
-    getVersion() {return "0.16.0";} // angery! give me my numerical versions! xd
-    getWordVersion() {return "sixteen";} // not required, i just prefer it.
+    getVersion() {return "0.17.0";} // angery! give me my numerical versions! xd
+    getWordVersion() {return "seventeen";} // not required, i just prefer it.
     getAuthor() {return "de/odex";}
     getSource() {return "https://rawgit.com/de-odex/bdthings/master/discord%20crypt/discypher.plugin.js"}
 
@@ -338,14 +338,14 @@ class discypher {
 
             let dec_block = new RegExp(start_string + "(.*)" + end_string, "g") // decrypted <- block, not decryption
             let dec_match = dec_block.exec(org_msg)
-            if (!dec_match) return
+
             //Logger.debug("decmatch", dec_match)
 
             // in original
-            let start = dec_match.index
-            let content_start = dec_match.index + start_string.length
-            let content_end = dec_match.index + start_string.length + dec_match[1].length
-            let end = dec_match.index + dec_match[0].length
+            let start = dec_match ? dec_match.index : -1
+            let content_start = dec_match ? dec_match.index + start_string.length : -1
+            let content_end = dec_match ? dec_match.index + start_string.length + dec_match[1].length : -1
+            let end = dec_match ? dec_match.index + dec_match[0].length : -1
 
             if (!this.settings.encrypt[channel.recipients[0]] && !(start!=-1 || end!=-1)) return
 
@@ -610,11 +610,17 @@ class discypher {
 
     // settings stuff
     set_settings() {
+        if (this.settings.dev_mode && DiscordModules.UserInfoStore.getId() != 259277943275126785) {
+            this.settings.dev_mode = false
+        }
         PluginUtilities.saveSettings(this.getName(), this.settings)
     }
 
     get_settings() {
         this.settings = PluginUtilities.loadSettings(this.getName(), this.default_settings)
+        if (this.settings.dev_mode && DiscordModules.UserInfoStore.getId() != 259277943275126785) {
+            this.settings.dev_mode = false
+        }
     }
 
     init(){
